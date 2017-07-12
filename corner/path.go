@@ -29,16 +29,24 @@ func NewPath(id string, corners []Corner, offsets []int) *Path {
 func (p *Path) Path(rsep float64) string {
 	var out bytes.Buffer
 	r, start, end, sweep := p.rounded(0, rsep)
-	out.WriteString(fmt.Sprintf("A %v,%v 0 %v 0 %s %s", r, r, sweep, start, end))
+	out.WriteString(fmt.Sprintf("M %s\n", end))
+	for i := range p.offsets[1:] {
+		r, start, end, sweep = p.rounded(i+1, rsep)
+		out.WriteString(fmt.Sprintf("L %s A %v,%v 0 %v 0 %s\n", start, r, r, sweep, end))
+	}
+	r, start, end, sweep = p.rounded(len(p.corners), rsep)
+	out.WriteString(fmt.Sprintf("L %s", start))
 	return out.String()
 }
 
 func (p *Path) rounded(i int, rsep float64) (float64, Point, Point, int) {
 	if i == 0{
-		return 0, p.corners[0].Point, p.corners[0].Point, 0
+		point := p.corners[0].offset(0, p.offsets[0])
+		return 0, point, point, 0
 	}
 	if i == len(p.corners){
-		return 0, p.corners[i].Point, p.corners[i].Point, 0
+		point := p.corners[i].offset(0, p.offsets[i-1])
+		return 0, point, point, 0
 	}
 	return p.corners[i].Rounded(p.offsets[i-1], p.offsets[i], rsep)
 }
