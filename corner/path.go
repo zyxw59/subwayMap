@@ -19,13 +19,9 @@ func NewPath(id string, corners []Corner, offsets []int) *Path {
 	// loop over corners and offsets, registering the offset at each corner
 	// we skip the first Corner, since the Path doesn't turn here
 	for i, o := range offsets[1:] {
-		// register the smaller offset. corners[i] is bounded by segments with
-		// offsets offsets[i-1] and offsets[i]
-		if offsets[i-1] > o {
-			corners[i].AddOffsets(o)
-		} else {
-			corners[i].AddOffsets(offsets[i-1])
-		}
+		// register the offsets. corners[i+1] is bounded by segments with
+		// offsets offsets[i] and offsets[i+1]
+		corners[i+1].AddOffsets(offsets[i], o)
 	}
 	return &path
 }
@@ -38,14 +34,11 @@ func (p *Path) Path(rsep float64) string {
 }
 
 func (p *Path) rounded(i int, rsep float64) (float64, Point, Point, int) {
-	var o int
-	switch {
-	case i == 0:
-		fallthrough
-	case p.offsets[i-1] > p.offsets[i]:
-		o = p.offsets[i]
-	default:
-		o = p.offsets[i-1]
+	if i == 0{
+		return 0, p.corners[0].Point, p.corners[0].Point, 0
 	}
-	return p.corners[i].Rounded(o, rsep)
+	if i == len(p.corners){
+		return 0, p.corners[i].Point, p.corners[i].Point, 0
+	}
+	return p.corners[i].Rounded(p.offsets[i-1], p.offsets[i], rsep)
 }
