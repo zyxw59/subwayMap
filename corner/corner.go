@@ -65,8 +65,7 @@ type Point struct {
 
 // DirectionTo returns the direction to another point
 func (p Point) DirectionTo(o Point) Direction {
-	theta := math.Atan2(p.y-o.y, p.x-o.x)
-	return thetaDirection{theta}
+	return rectDirection{p.x - o.x, p.y - o.y}
 }
 
 func (p Point) String() string {
