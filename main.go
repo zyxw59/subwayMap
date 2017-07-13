@@ -23,9 +23,46 @@ func (p *Printer) Println(a ...interface{}) (n int, err error) {
 	return fmt.Fprintln(p.Writer, a...)
 }
 
+func (canvas *Printer) PrintInit(width, height float64) {
+	canvas.Println(header)
+	canvas.Printf(stylesheetfmt, "lines")
+	canvas.Printf(svginitfmt, width, height)
+	canvas.Println(svgns)
+}
+
+func (canvas *Printer) PrintDefs(rsep float64, paths ...[]corner.Path) {
+	// begin line definitions
+	canvas.Println("<defs>")
+	for _, ps := range paths {
+		for _, p := range ps {
+			canvas.Println(p.Path(rsep))
+		}
+	}
+	// end line definitions
+	canvas.Println("</defs>")
+}
+
+func (canvas *Printer) PrintPaths(paths ...[]corner.Path) {
+	for _, ps := range paths {
+		canvas.Println("<g>")
+		for _, p := range ps {
+			canvas.Printf(usefmt, p.Id, "whitebg")
+		}
+		for _, p := range ps {
+			canvas.Printf(usefmt, p.Id, p.Id)
+		}
+		canvas.Println("</g>")
+	}
+}
+
+func (canvas *Printer) PrintClose() {
+	canvas.Println("</svg>")
+}
+
 func main() {
 	var (
 		paths               []corner.Path
+		paths2              []corner.Path
 		width, height, rsep float64
 		canvas              Printer
 	)
@@ -35,26 +72,18 @@ func main() {
 	canvas = Printer{os.Stdout}
 	A := *corner.NewCorner(100, 100, corner.South, corner.South)
 	B := *corner.NewCorner(100, 400, corner.South, corner.East)
-	C := *corner.NewCorner(400, 400, corner.East, corner.East)
-	corners := []corner.Corner{A, B, C}
-	offsets := []int{0, 0}
-	paths = append(paths, *corner.NewPath("abc", corners, offsets))
-	printPaths(canvas, width, height, rsep, paths)
-}
-
-func printPaths(canvas Printer, width, height, rsep float64, paths []corner.Path) {
-	canvas.Println(header)
-	canvas.Printf(stylesheetfmt, "lines")
-	canvas.Printf(svginitfmt, width, height)
-	canvas.Println(svgns)
-	// begin line definitions
-	canvas.Println("<defs>")
-	for _, p := range paths {
-		canvas.Println(p.Path(rsep))
-	}
-	// end line definitions
-	canvas.Println("</defs>")
-	canvas.Println("</svg>")
+	C := *corner.NewCorner(400, 400, corner.East, corner.South)
+	D := *corner.NewCorner(400, 800, corner.South, corner.West)
+	corners := []corner.Corner{A, B, C, D}
+	p1 := corner.NewPath("a", corners, []int{1, 0, 0})
+	p2 := corner.NewPath("b", corners, []int{-1, 2, 2})
+	p3 := corner.NewPath("c", corners, []int{0, 1, 1})
+	paths = append(paths, *p1, *p2)
+	paths2 = append(paths2, *p3)
+	canvas.PrintInit(width, height)
+	canvas.PrintDefs(rsep, paths, paths2)
+	canvas.PrintPaths(paths, paths2)
+	canvas.PrintClose()
 }
 
 const (
@@ -62,4 +91,6 @@ const (
 	stylesheetfmt = "<?xml-stylesheet type='text/css' href='%s.css'?>\n"
 	svginitfmt    = "<svg width=\"%v\" height=\"%v\"\n"
 	svgns         = "xmlns='http://www.w3.org/2000/svg'\nxmlns:xlink='http://www.w3.org/1999/xlink'>"
+	usefmt        = "<use xlink:href='#%s' class='%s' />\n"
+	whitebg       = "class='whitebg'"
 )

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<?xml-stylesheet type='text/css' href='lines.css'?>
+<svg width="2000" height="2000"
+xmlns='http://www.w3.org/2000/svg'
+xmlns:xlink='http://www.w3.org/1999/xlink'>
+<defs>
+<path id='a' d='M 90.000000 100.000000
+L 90.000000 390.000000 A 10,10 0 0 0 100.000000 400.000000
+L 370.000000 400.000000 A 30,30 0 0 1 400.000000 430.000000
+L 400.000000 800.000000' />
+<path id='b' d='M 110.000000 100.000000
+L 110.000000 410.000000 A 10,10 0 0 0 120.000000 420.000000
+L 370.000000 420.000000 A 10,10 0 0 1 380.000000 430.000000
+L 380.000000 800.000000' />
+<path id='c' d='M 100.000000 100.000000
+L 100.000000 390.000000 A 20,20 0 0 0 120.000000 410.000000
+L 370.000000 410.000000 A 20,20 0 0 1 390.000000 430.000000
+L 390.000000 800.000000' />
+</defs>
+<g>
+<use xlink:href='#a' class='whitebg' />
+<use xlink:href='#b' class='whitebg' />
+<use xlink:href='#a' class='a' />
+<use xlink:href='#b' class='b' />
+</g>
+<g>
+<use xlink:href='#c' class='whitebg' />
+<use xlink:href='#c' class='c' />
+</g>
+</svg>
