@@ -70,11 +70,8 @@ func main() {
 	height = 2000
 	rsep = 10.0
 	canvas = Printer{os.Stdout}
-	A := *corner.NewCorner(100, 100, corner.South, corner.South)
-	B := *corner.NewCorner(100, 400, corner.South, corner.East)
-	C := *corner.NewCorner(400, 400, corner.East, corner.South)
-	D := *corner.NewCorner(400, 800, corner.South, corner.West)
-	corners := []corner.Corner{A, B, C, D}
+	points := []corner.Point{{100, 100}, {100, 400}, {400, 400}, {100, 800}}
+	corners := corner.Sequence(points...)
 	p1 := corner.NewPath("a", corners, []int{1, 0, 0})
 	p2 := corner.NewPath("b", corners, []int{-1, 2, 2})
 	p3 := corner.NewPath("c", corners, []int{0, 1, 1})

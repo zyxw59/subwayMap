@@ -53,21 +53,37 @@ func (c *Corner) Rounded(in, out int, rsep float64) (r float64, start, end Point
 }
 
 func (c *Corner) offset(in, out float64) Point {
+	if c.in == c.out {
+		return c.in.Basis(0, (in+out)/2, c.Point)
+	}
 	alpha := 1 / math.Sin(c.in.Minus(c.out))
 	return c.out.Basis(-alpha*in, 0, c.in.Basis(alpha*out, 0, c.Point))
 }
 
 // A Point is a point in 2-d space, with an x coordinate and a y coordinate
 type Point struct {
-	x float64
-	y float64
+	X float64
+	Y float64
 }
 
 // DirectionTo returns the direction to another point
 func (p Point) DirectionTo(o Point) Direction {
-	return rectDirection{p.x - o.x, p.y - o.y}
+	return rectDirection{o.X - p.X, o.Y - p.Y}
 }
 
 func (p Point) String() string {
-	return fmt.Sprintf("%f %f", p.x, p.y)
+	return fmt.Sprintf("%f %f", p.X, p.Y)
+}
+
+// Sequence produces a sequence of Corners from a sequence of Points
+func Sequence(points ...Point) []Corner {
+	cs := make([]Corner, len(points))
+	dir := points[0].DirectionTo(points[1])
+	for i, p := range points[:len(points)-1] {
+		cs[i] = Corner{Point: p, in: dir}
+		dir = p.DirectionTo(points[i+1])
+		cs[i].out = dir
+	}
+	cs[len(points)-1] = Corner{Point: points[len(points)-1], in: dir, out: dir}
+	return cs
 }

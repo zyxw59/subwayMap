@@ -9,10 +9,10 @@ var North = rectDirection{0, -1}
 var South = rectDirection{0, 1}
 
 // East is to the right, i.e. +x
-var East = rectDirection{-1, 0}
+var East = rectDirection{1, 0}
 
 // West is to the left, i.e. -x
-var West = rectDirection{1, 0}
+var West = rectDirection{-1, 0}
 
 /*
 var North = thetaDirection{-math.Pi/2}
@@ -65,7 +65,7 @@ func (d thetaDirection) Sin() float64 {
 func (d thetaDirection) Basis(u, v float64, o Point) Point {
 	c := d.Cos()
 	s := d.Sin()
-	return Point{o.x + u*c - v*s, o.y + u*s + v*c}
+	return Point{o.X + u*c - v*s, o.Y + u*s + v*c}
 }
 
 type rectDirection struct {
@@ -78,7 +78,7 @@ func (d rectDirection) Minus(other Direction) float64 {
 	case rectDirection:
 		dot := d.x*other.x + d.y*other.y
 		cross := d.x*other.y - d.y*other.x
-		return modTau(math.Atan2(cross, dot))
+		return modTau(math.Atan2(-cross, dot))
 	default:
 		return modTau(d.Angle() - other.Angle())
 	}
@@ -89,7 +89,7 @@ func (d rectDirection) r() float64 {
 }
 
 func (d rectDirection) Cos() float64 {
-	return -d.x / d.r()
+	return d.x / d.r()
 }
 
 func (d rectDirection) Sin() float64 {
@@ -101,5 +101,5 @@ func (d rectDirection) Angle() float64 {
 }
 
 func (d rectDirection) Basis(u, v float64, o Point) Point {
-	return Point{o.x - (u*d.x+v*d.y)/d.r(), o.y + (u*d.y-v*d.x)/d.r()}
+	return Point{o.X + (u*d.x-v*d.y)/d.r(), o.Y + (u*d.y+v*d.x)/d.r()}
 }
