@@ -2,6 +2,18 @@ package corner
 
 import "math"
 
+// North is up the page, i.e. -y
+var North = thetaDirection{-math.Pi / 2}
+
+// South is down the page, i.e. +y
+var South = thetaDirection{math.Pi / 2}
+
+// East is to the right, i.e. +x
+var East = thetaDirection{0}
+
+// West is to the left, i.e. -x
+var West = thetaDirection{0}
+
 // A Direction is a representation of a direction in 2-d space
 type Direction interface {
 	Angle() float64

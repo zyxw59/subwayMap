@@ -40,12 +40,12 @@ func (p *Path) Path(rsep float64) string {
 }
 
 func (p *Path) rounded(i int, rsep float64) (float64, Point, Point, int) {
-	if i == 0{
+	if i == 0 {
 		point := p.corners[0].offset(0, p.offsets[0])
 		return 0, point, point, 0
 	}
-	if i == len(p.corners){
-		point := p.corners[i].offset(0, p.offsets[i-1])
+	if i == len(p.corners) {
+		point := p.corners[i-1].offset(0, p.offsets[i-2])
 		return 0, point, point, 0
 	}
 	return p.corners[i].Rounded(p.offsets[i-1], p.offsets[i], rsep)

@@ -9,11 +9,15 @@ import (
 // list of offsets of paths using it, as well as an incoming and an outgoing
 // Direction.
 type Corner struct {
-	Point   Point
-	in      Direction
-	out     Direction
-	inOffsets []int
+	Point      Point
+	in         Direction
+	out        Direction
+	inOffsets  []int
 	outOffsets []int
+}
+
+func NewCorner(x, y float64, in, out Direction) (c *Corner) {
+	return &Corner{Point: Point{x, y}, in: in, out: out}
 }
 
 // AddOffsets appends incoming and outgoing offsets to a Corner
@@ -29,7 +33,7 @@ func (c *Corner) Rounded(in, out int, rsep float64) (r float64, start, end Point
 	theta := c.in.Minus(c.out).Angle() / 2
 	var inD, outD int
 	// I might have this backwards
-	if theta > math.Pi / 2 {
+	if theta > math.Pi/2 {
 		sweep = 1
 		inD = in - minIntSlice(c.inOffsets) + 1
 		outD = in - minIntSlice(c.outOffsets) + 1
