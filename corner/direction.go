@@ -2,24 +2,50 @@ package corner
 
 import "math"
 
-// North is up the page, i.e. -y
-var North = rectDirection{0, -1}
-
-// South is down the page, i.e. +y
-var South = rectDirection{0, 1}
-
-// East is to the right, i.e. +x
-var East = rectDirection{1, 0}
-
-// West is to the left, i.e. -x
-var West = rectDirection{-1, 0}
-
-/*
-var North = thetaDirection{-math.Pi/2}
-var South = thetaDirection{math.Pi/2}
-var East = thetaDirection{0}
-var West = thetaDirection{math.Pi}
-*/
+// Rose generates a set of n evenly-spaced Directions
+func Rose(n int, offset float64) []Direction {
+	dirs := make([]Direction, n)
+	if offset == 0 {
+		// special cases
+		north := rectDirection{0, -1}
+		south := rectDirection{0, 1}
+		east := rectDirection{1, 0}
+		west := rectDirection{-1, 0}
+		if n == 1 {
+			dirs[0] = north
+			return dirs
+		}
+		if n == 2 {
+			dirs[0] = north
+			dirs[1] = south
+			return dirs
+		}
+		if n == 4 {
+			dirs[0] = north
+			dirs[1] = east
+			dirs[2] = south
+			dirs[3] = west
+			return dirs
+		}
+		if n == 8 {
+			dirs[0] = north
+			dirs[1] = rectDirection{1, -1}
+			dirs[2] = east
+			dirs[3] = rectDirection{1, 1}
+			dirs[4] = south
+			dirs[5] = rectDirection{-1, 1}
+			dirs[6] = west
+			dirs[7] = rectDirection{-1, -1}
+			return dirs
+		}
+	}
+	// general case
+	alpha := 2 * math.Pi / float64(n)
+	for i := range dirs {
+		dirs[i] = thetaDirection{float64(i)*alpha + offset}
+	}
+	return dirs
+}
 
 // A Direction is a representation of a direction in 2-d space
 type Direction interface {
