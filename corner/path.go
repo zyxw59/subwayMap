@@ -10,14 +10,14 @@ import (
 // offsets (before and after) with each Corner
 type Path struct {
 	Id      string
-	corners []Corner
+	corners []*Corner
 	offsets []int
 }
 
 // NewPath returns a new Path with a given id, list of corners, and list of
 // offsets. len(corners) should equal len(offsets) + 1. If one is too long, it
 // will be truncated
-func NewPath(id string, corners []Corner, offsets []int) *Path {
+func NewPath(id string, corners []*Corner, offsets []int) *Path {
 	lc := len(corners)
 	lo := len(offsets)
 	switch {
