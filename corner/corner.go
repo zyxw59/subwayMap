@@ -75,7 +75,7 @@ func (c *Corner) Rounded(in, out int, rbase, rsep float64) (r float64, start, en
 		inD = in - minIntSlice(c.inOffsets)
 		outD = out - minIntSlice(c.outOffsets)
 	}
-	r = rsep * math.Min(float64(inD), float64(outD)) + rbase
+	r = rsep*math.Min(float64(inD), float64(outD)) + rbase
 	l := math.Abs(r * math.Tan(theta))
 	p := c.offset(float64(in)*rsep, float64(out)*rsep)
 	start = c.in.Basis(-l, 0, p)
