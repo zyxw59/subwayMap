@@ -29,7 +29,7 @@ func (c *Corner) AddOffsets(in, out int) {
 	c.outOffsets = append(c.outOffsets, out)
 }
 
-func (c *Corner) Arc(in, out int, rsep float64) (text string) {
+func (c *Corner) Arc(in, out int, rbase, rsep float64) (text string) {
 	inr := float64(in) * rsep
 	outr := float64(out) * rsep
 	if c.in.Equal(c.out) {
@@ -46,7 +46,7 @@ func (c *Corner) Arc(in, out int, rsep float64) (text string) {
 		return fmt.Sprintf("L %s C %s %s %s\n", p0, p1, p2, p3)
 	}
 	// rounded corner
-	r, start, end, sweep := c.Rounded(in, out, rsep)
+	r, start, end, sweep := c.Rounded(in, out, rbase, rsep)
 	return fmt.Sprintf("L %s A %v,%v 0 0 %v %s\n", start, r, r, sweep, end)
 }
 
@@ -63,19 +63,19 @@ func (c *Corner) startPoint(offset int, rsep float64) string {
 // Rounded generates a rounded corner with given parallel offsets before and
 // after the corner, and a given radius increment value. It returns the radius,
 // the start and end points of the arc, and the sweep flag.
-func (c *Corner) Rounded(in, out int, rsep float64) (r float64, start, end Point, sweep int) {
+func (c *Corner) Rounded(in, out int, rbase, rsep float64) (r float64, start, end Point, sweep int) {
 	theta := c.in.Minus(c.out) / 2
 	var inD, outD int
 	if theta > math.Pi/2 {
 		sweep = 1
-		inD = maxIntSlice(c.inOffsets) - in + 1
-		outD = maxIntSlice(c.outOffsets) - out + 1
+		inD = maxIntSlice(c.inOffsets) - in
+		outD = maxIntSlice(c.outOffsets) - out
 	} else {
 		sweep = 0
-		inD = in - minIntSlice(c.inOffsets) + 1
-		outD = out - minIntSlice(c.outOffsets) + 1
+		inD = in - minIntSlice(c.inOffsets)
+		outD = out - minIntSlice(c.outOffsets)
 	}
-	r = rsep * math.Min(float64(inD), float64(outD))
+	r = rsep * math.Min(float64(inD), float64(outD)) + rbase
 	l := math.Abs(r * math.Tan(theta))
 	p := c.offset(float64(in)*rsep, float64(out)*rsep)
 	start = c.in.Basis(-l, 0, p)

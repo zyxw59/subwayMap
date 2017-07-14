@@ -10,6 +10,7 @@ import (
 // offsets (before and after) with each Corner
 type Path struct {
 	Id      string
+	Class   string
 	corners []*Corner
 	offsets []int
 }
@@ -17,7 +18,7 @@ type Path struct {
 // NewPath returns a new Path with a given id, list of corners, and list of
 // offsets. len(corners) should equal len(offsets) + 1. If one is too long, it
 // will be truncated
-func NewPath(id string, corners []*Corner, offsets []int) *Path {
+func NewPath(id, class string, corners []*Corner, offsets []int) *Path {
 	lc := len(corners)
 	lo := len(offsets)
 	switch {
@@ -26,7 +27,7 @@ func NewPath(id string, corners []*Corner, offsets []int) *Path {
 	case lc > lo+1:
 		corners = corners[:lo+1]
 	}
-	path := Path{Id: id, corners: corners, offsets: offsets}
+	path := Path{Id: id, Class: class, corners: corners, offsets: offsets}
 	// loop over corners and offsets, registering the offset at each corner
 	// we skip the first Corner, since the Path doesn't turn here
 	for i, o := range offsets[1:] {
@@ -37,22 +38,22 @@ func NewPath(id string, corners []*Corner, offsets []int) *Path {
 	return &path
 }
 
-func (p *Path) Path(rsep float64) string {
+func (p *Path) Path(rbase, rsep float64) string {
 	var out bytes.Buffer
 	out.WriteString(fmt.Sprintf("<path id='%s' d='", p.Id))
 	for i := range p.corners {
-		out.WriteString(p.arc(i, rsep))
+		out.WriteString(p.arc(i, rbase, rsep))
 	}
 	out.WriteString("' />")
 	return out.String()
 }
 
-func (p *Path) arc(i int, rsep float64) string {
+func (p *Path) arc(i int, rbase, rsep float64) string {
 	if i == 0 {
 		return p.corners[i].startPoint(p.offsets[0], rsep)
 	}
 	if i == len(p.offsets) {
 		return p.corners[i].endPoint(p.offsets[i-1], rsep)
 	}
-	return p.corners[i].Arc(p.offsets[i-1], p.offsets[i], rsep)
+	return p.corners[i].Arc(p.offsets[i-1], p.offsets[i], rbase, rsep)
 }

@@ -8,34 +8,25 @@ import (
 
 func main() {
 	var (
-		paths               []corner.Path
-		width, height, rsep float64
-		c                   canvas.Canvas
+		paths                      []corner.Path
+		width, height, rbase, rsep float64
+		c                          canvas.Canvas
 	)
 	width = 2000
 	height = 2000
-	rsep = 10.0
+	rbase = 30
+	rsep = 10
 	c = canvas.Canvas{os.Stdout}
-	points := []corner.Point{{100, 400}, {200, 400}, {300, 400}}
-	ab := []corner.Point{{100, 300}}
-	cd := []corner.Point{{100, 500}}
-	ac := []corner.Point{{300, 300}}
-	bd := []corner.Point{{300, 500}}
-	abCorners := corner.Sequence(append(ab, points...)...)
-	cdCorners := corner.Sequence(append(cd, points...)...)
-	acCorners := corner.Sequence(append(points, ac...)...)
-	bdCorners := corner.Sequence(append(points, bd...)...)
-	aCorners := append(abCorners[:2], acCorners[1:]...)
-	bCorners := append(abCorners[:2], bdCorners[1:]...)
-	cCorners := append(cdCorners[:2], acCorners[1:]...)
-	dCorners := append(cdCorners[:2], bdCorners[1:]...)
-	p1 := *corner.NewPath("a", aCorners, []int{-1, -1,  0,  0})
-	p2 := *corner.NewPath("b", bCorners, []int{ 0,  0,  2,  1})
-	p3 := *corner.NewPath("c", cCorners, []int{ 0,  1, -1, -1})
-	p4 := *corner.NewPath("d", dCorners, []int{ 1,  2,  1,  0})
-	paths1 := append(paths, p1)
-	paths2 := append(paths, p2)
-	paths3 := append(paths, p3)
-	paths4 := append(paths, p4)
-	c.PrintAll(width, height, "lines", rsep, paths1, paths2, paths3, paths4)
+	av8st145 := corner.Point{200, 100}
+	av8st63 := corner.Point{200, 500}
+	av6st63 := corner.Point{400, 500}
+	av8st14 := corner.Point{200, 900}
+	av6st4 := corner.Point{400, 1000}
+	stChurchStChambers := corner.Point{400, 1200}
+	stHoustonAv2 := corner.Point{600, 1000}
+	av8 := corner.Sequence(av8st145, av8st14, av6st4, stChurchStChambers)
+	av6 := corner.Sequence(av8st145, av8st63, av6st63, av6st4, stHoustonAv2)
+	a := *corner.NewPath("a", "av8", av8, []int{0, 0, 1})
+	b := *corner.NewPath("b", "av6", av6, []int{-1, 0, 0, 0})
+	c.PrintAll(width, height, "nyc", rbase, rsep, append(paths, a), append(paths, b))
 }

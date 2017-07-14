@@ -38,12 +38,12 @@ func (c *Canvas) PrintInit(width, height float64, stylesheet string) {
 	c.Println(svgns)
 }
 
-func (c *Canvas) PrintDefs(rsep float64, paths ...[]corner.Path) {
+func (c *Canvas) PrintDefs(rbase, rsep float64, paths ...[]corner.Path) {
 	// begin line definitions
 	c.Println("<defs>")
 	for _, ps := range paths {
 		for _, p := range ps {
-			c.Println(p.Path(rsep))
+			c.Println(p.Path(rbase, rsep))
 		}
 	}
 	// end line definitions
@@ -57,7 +57,7 @@ func (c *Canvas) PrintPaths(paths ...[]corner.Path) {
 			c.Printf(usefmt, p.Id, "whitebg")
 		}
 		for _, p := range ps {
-			c.Printf(usefmt, p.Id, p.Id)
+			c.Printf(usefmt, p.Id, p.Class)
 		}
 		c.Println("</g>")
 	}
@@ -67,9 +67,9 @@ func (c *Canvas) PrintClose() {
 	c.Println("</svg>")
 }
 
-func (c *Canvas) PrintAll(width, height float64, stylesheet string, rsep float64, paths ...[]corner.Path) {
+func (c *Canvas) PrintAll(width, height float64, stylesheet string, rbase, rsep float64, paths ...[]corner.Path) {
 	c.PrintInit(width, height, stylesheet)
-	c.PrintDefs(rsep, paths...)
+	c.PrintDefs(rbase, rsep, paths...)
 	c.PrintPaths(paths...)
 	c.PrintClose()
 }
