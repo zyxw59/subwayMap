@@ -29,6 +29,37 @@ func (c *Corner) AddOffsets(in, out int) {
 	c.outOffsets = append(c.outOffsets, out)
 }
 
+func (c *Corner) Arc(in, out int, rsep float64) (text string) {
+	inr := float64(in) * rsep
+	outr := float64(out) * rsep
+	if c.in.Equal(c.out) {
+		if in == out {
+			// nothing to do here
+			return ""
+		}
+		// otherwise, parallel shifts
+		delta := math.Abs(float64(out-in) * rsep)
+		p0 := c.in.Basis(-delta, inr, c.Point)
+		p1 := c.in.Basis(0, inr, c.Point)
+		p2 := c.out.Basis(0, outr, c.Point)
+		p3 := c.out.Basis(delta, outr, c.Point)
+		return fmt.Sprintf("L %s C %s %s %s\n", p0, p1, p2, p3)
+	}
+	// rounded corner
+	r, start, end, sweep := c.Rounded(in, out, rsep)
+	return fmt.Sprintf("L %s A %v,%v 0 0 %v %s\n", start, r, r, sweep, end)
+}
+
+func (c *Corner) endPoint(offset int, rsep float64) string {
+	p := c.in.Basis(0, float64(offset)*rsep, c.Point)
+	return fmt.Sprintf("L %s", p)
+}
+
+func (c *Corner) startPoint(offset int, rsep float64) string {
+	p := c.out.Basis(0, float64(offset)*rsep, c.Point)
+	return fmt.Sprintf("M %s\n", p)
+}
+
 // Rounded generates a rounded corner with given parallel offsets before and
 // after the corner, and a given radius increment value. It returns the radius,
 // the start and end points of the arc, and the sweep flag.
@@ -46,14 +77,14 @@ func (c *Corner) Rounded(in, out int, rsep float64) (r float64, start, end Point
 	}
 	r = rsep * math.Min(float64(inD), float64(outD))
 	l := math.Abs(r * math.Tan(theta))
-	p := c.offset(rsep*float64(in), rsep*float64(out))
+	p := c.offset(float64(in)*rsep, float64(out)*rsep)
 	start = c.in.Basis(-l, 0, p)
 	end = c.out.Basis(l, 0, p)
 	return r, start, end, sweep
 }
 
 func (c *Corner) offset(in, out float64) Point {
-	if c.in == c.out {
+	if c.in.Equal(c.out) {
 		return c.in.Basis(0, (in+out)/2, c.Point)
 	}
 	alpha := 1 / math.Sin(c.in.Minus(c.out))

@@ -54,6 +54,7 @@ type Direction interface {
 	Basis(float64, float64, Point) Point
 	Cos() float64
 	Sin() float64
+	Equal(Direction) bool
 }
 
 type thetaDirection struct {
@@ -94,6 +95,10 @@ func (d thetaDirection) Basis(u, v float64, o Point) Point {
 	return Point{o.X + u*c - v*s, o.Y + u*s + v*c}
 }
 
+func (d thetaDirection) Equal(other Direction) bool {
+	return d.theta == other.Angle()
+}
+
 type rectDirection struct {
 	x float64
 	y float64
@@ -128,4 +133,13 @@ func (d rectDirection) Angle() float64 {
 
 func (d rectDirection) Basis(u, v float64, o Point) Point {
 	return Point{o.X + (u*d.x-v*d.y)/d.r(), o.Y + (u*d.y+v*d.x)/d.r()}
+}
+
+func (d rectDirection) Equal(other Direction) bool {
+	switch other := other.(type) {
+	case rectDirection:
+		return d.x*other.y == d.y*other.x
+	default:
+		return d.Angle() == other.Angle()
+	}
 }
