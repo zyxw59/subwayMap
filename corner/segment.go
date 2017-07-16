@@ -93,3 +93,21 @@ func (s *Segment) ArcTo(other *Segment, in, out int, rbase, rsep float64) string
 	end := outDir.Basis(l, 0, p)
 	return fmt.Sprintf("L %s A %v,%v 0 0 %v %s\n", start, r, r, sweep, end)
 }
+
+func (s *Segment) LabelAt(point Point, posSide bool, text string) *Label {
+	var offset int
+	if posSide {
+		offset = maxIntSlice(s.offsets)
+	} else {
+		offset = minIntSlice(s.offsets)
+	}
+	return &Label{
+		Text:    text,
+		point:   point,
+		dir:     s.Direction().Normal(),
+		offset:  offset,
+		posSide: posSide,
+		id:      fmt.Sprintf("%v-%v-%v", text, point.X, point.Y),
+		class:   "",
+	}
+}
