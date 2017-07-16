@@ -27,23 +27,23 @@ func NewLabel(text string, point Point, dir Direction, offset int, id, class str
 	}
 }
 
-func (l *Label) Element(rbase, rsep float) string {
+func (l *Label) Element(rbase, rsep float64) string {
 	baseline := "middle"
 	align := "middle"
 	anchor := l.dir.Basis((float64(l.offset)+labelFudge)*rsep, 0, l.point)
 	switch {
-	case anchor.x < l.point.x:
+	case anchor.X < l.point.X:
 		align = "end"
-	case anchor.x > l.point.x:
+	case anchor.X > l.point.X:
 		align = "start"
 	}
 	switch {
-	case anchor.y < l.point.y:
+	case anchor.Y < l.point.Y:
 		baseline = "alphabetic"
-	case anchor.y > l.point.y:
+	case anchor.Y > l.point.Y:
 		baseline = "hanging"
 	}
-	return fmt.Sprintf(labelfmt, l.id, anchor.x, anchor.y, baseline, align, l.Text)
+	return fmt.Sprintf(labelfmt, l.id, anchor.X, anchor.Y, baseline, align, l.Text)
 }
 
 func (l *Label) Id() string {
