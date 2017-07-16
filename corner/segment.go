@@ -111,3 +111,15 @@ func (s *Segment) LabelAt(point Point, posSide bool, text string) *Label {
 		class:   "",
 	}
 }
+
+func (s *Segment) LabelAtX(x float64, posSide bool, text string) *Label {
+	// find y such that (x, y) is on the line between s.Start and s.End
+	y := ((s.Start.X-x)*s.End.Y - (s.End.X-x)*s.Start.Y) / (s.Start.X - s.End.X)
+	return s.LabelAt(Point{x, y}, posSide, text)
+}
+
+func (s *Segment) LabelAtY(y float64, posSide bool, text string) *Label {
+	// find x such that (x, y) is on the line between s.Start and s.End
+	x := ((s.Start.Y-y)*s.End.X - (s.End.Y-y)*s.Start.X) / (s.Start.Y - s.End.Y)
+	return s.LabelAt(Point{x, y}, posSide, text)
+}
