@@ -2,7 +2,6 @@ package canvas
 
 import (
 	"fmt"
-	"github.com/zyxw59/subwayMap/corner"
 	"io"
 )
 
@@ -16,6 +15,12 @@ const (
 	labelFudge    = 0.5
 )
 
+type Element interface {
+	Element(rbase, rsep float64) string
+	Id() string
+	Class() string
+}
+
 type Canvas struct {
 	writer     io.Writer
 	Width      float64
@@ -23,7 +28,7 @@ type Canvas struct {
 	Stylesheet string
 	Rbase      float64
 	Rsep       float64
-	paths      [][]corner.Path
+	elements   [][]Element
 }
 
 // New initializes a new Canvas
@@ -40,19 +45,19 @@ func New(writer io.Writer, width, height float64, stylesheet string, rbase, rsep
 	return c
 }
 
-// AddPaths adds the specified Paths as their own layer
-func (c *Canvas) AddPaths(paths ...corner.Path) {
-	c.paths = append(c.paths, paths)
+// AddElements adds the specified Elements as their own layer
+func (c *Canvas) AddElements(elements ...Element) {
+	c.elements = append(c.elements, elements)
 	c.Println("<defs>")
-	for _, p := range paths {
-		c.Println(p.Path(c.Rbase, c.Rsep))
+	for _, e := range elements {
+		c.Println(e.Element(c.Rbase, c.Rsep))
 	}
 	c.Println("</defs>")
 }
 
 // Close finishes writing the SVG code
 func (c *Canvas) Close() {
-	c.printPaths()
+	c.printElements()
 	c.printClose()
 }
 
@@ -76,17 +81,17 @@ func (c *Canvas) printInit() {
 	c.Println(svgns)
 }
 
-// printPaths prints <use> tags to draw the paths. Within each layer, first the
-// paths are drawn with class="whitebg" to stroke behind the lines, then with
-// class="p.Class" to draw the lines themselves
-func (c *Canvas) printPaths() {
-	for _, ps := range c.paths {
+// printElements prints <use> tags to draw the elements defined earlier. Within
+// each layer, first the elements are drawn with class="bg" to stroke outlines,
+// then with class="e.Class()" to draw the elements in foreground
+func (c *Canvas) printElements() {
+	for _, es := range c.elements {
 		c.Println("<g>")
-		for _, p := range ps {
-			c.Printf(usefmt, p.Id, "whitebg")
+		for _, e := range es {
+			c.Printf(usefmt, e.Id(), "whitebg")
 		}
-		for _, p := range ps {
-			c.Printf(usefmt, p.Id, p.Class)
+		for _, e := range es {
+			c.Printf(usefmt, e.Id(), e.Class())
 		}
 		c.Println("</g>")
 	}

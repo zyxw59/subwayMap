@@ -9,8 +9,8 @@ import (
 // parallel offsets along each segment. A Path registers the smaller of the two
 // offsets (before and after) with each Corner
 type Path struct {
-	Id      string
-	Class   string
+	id      string
+	class   string
 	corners []*Corner
 	offsets []int
 }
@@ -27,7 +27,12 @@ func NewPath(id, class string, corners []*Corner, offsets []int) *Path {
 	case lc > lo+1:
 		corners = corners[:lo+1]
 	}
-	path := Path{Id: id, Class: class, corners: corners, offsets: offsets}
+	path := Path{
+		id:      id,
+		class:   class,
+		corners: corners,
+		offsets: offsets,
+	}
 	// loop over corners and offsets, registering the offset at each corner
 	// we skip the first Corner, since the Path doesn't turn here
 	for i, o := range offsets[1:] {
@@ -38,14 +43,25 @@ func NewPath(id, class string, corners []*Corner, offsets []int) *Path {
 	return &path
 }
 
-func (p *Path) Path(rbase, rsep float64) string {
+// Element generates the SVG <path> element to draw the Path. rbase determines
+// the base radius of corners, and rsep determines the additional radius for
+// each concentric Path
+func (p *Path) Element(rbase, rsep float64) string {
 	var out bytes.Buffer
-	out.WriteString(fmt.Sprintf("<path id='%s' d='", p.Id))
+	out.WriteString(fmt.Sprintf("<path id='%s' d='", p.id))
 	for i := range p.corners {
 		out.WriteString(p.arc(i, rbase, rsep))
 	}
 	out.WriteString("' />")
 	return out.String()
+}
+
+func (p *Path) Id() string {
+	return p.id
+}
+
+func (p *Path) Class() string {
+	return p.class
 }
 
 func (p *Path) arc(i int, rbase, rsep float64) string {
