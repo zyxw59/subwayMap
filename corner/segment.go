@@ -30,11 +30,6 @@ func (s *Segment) String() string {
 	return fmt.Sprintf("Segment((%s), (%s))", s.Start, s.End)
 }
 
-type SegmentError struct {
-	In  *Segment
-	Out *Segment
-}
-
 // Sequence produces a sequence of Segments from a sequence of Points
 func Sequence(points ...Point) []*Segment {
 	segs := make([]*Segment, len(points)-1)
