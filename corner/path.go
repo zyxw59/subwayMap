@@ -5,40 +5,37 @@ import (
 	"fmt"
 )
 
-// A Path is a series of Corners to be joined with line segments, along with
-// parallel offsets along each segment. A Path registers the smaller of the two
-// offsets (before and after) with each Corner
+// A Path is a series of Segments to be joined with rounded corners, along with
+// parallel offsets along each segment.
 type Path struct {
-	id      string
-	class   string
-	corners []*Corner
-	offsets []int
+	id       string
+	class    string
+	segments []*Segment
+	offsets  []int
 }
 
-// NewPath returns a new Path with a given id, list of corners, and list of
-// offsets. len(corners) should equal len(offsets) + 1. If one is too long, it
-// will be truncated
-func NewPath(id, class string, corners []*Corner, offsets []int) *Path {
-	lc := len(corners)
+// NewPath returns a new Path with a given id, class, list of segments, and
+// list of offsets. len(segments) should equal len(offsets). If one is too
+// long, it will be truncated
+func NewPath(id, class string, segments []*Segment, offsets []int) *Path {
+	ls := len(segments)
 	lo := len(offsets)
 	switch {
-	case lc < lo+1:
-		offsets = offsets[:lc-1]
-	case lc > lo+1:
-		corners = corners[:lo+1]
+	case ls < lo:
+		offsets = offsets[:ls]
+	case ls > lo:
+		segments = segments[:lo]
 	}
 	path := Path{
-		id:      id,
-		class:   class,
-		corners: corners,
-		offsets: offsets,
+		id:       id,
+		class:    class,
+		segments: segments,
+		offsets:  offsets,
 	}
-	// loop over corners and offsets, registering the offset at each corner
-	// we skip the first Corner, since the Path doesn't turn here
-	for i, o := range offsets[1:] {
-		// register the offsets. corners[i+1] is bounded by segments
-		// with offsets offsets[i] and offsets[i+1]
-		corners[i+1].AddOffsets(offsets[i], o)
+	// loop over segments and offsets, registering the offset at each
+	// segment
+	for i, o := range offsets {
+		segments[i].AddOffset(o)
 	}
 	return &path
 }
@@ -49,9 +46,12 @@ func NewPath(id, class string, corners []*Corner, offsets []int) *Path {
 func (p *Path) Element(rbase, rsep float64) string {
 	var out bytes.Buffer
 	out.WriteString(fmt.Sprintf("<path id='%s' d='", p.id))
-	for i := range p.corners {
-		out.WriteString(p.arc(i, rbase, rsep))
+	out.WriteString(p.segments[0].startPoint(p.offsets[0], rsep))
+	for i, s := range p.segments[1:] {
+		out.WriteString(p.segments[i].ArcTo(s, p.offsets[i], p.offsets[i+1], rbase, rsep))
 	}
+	l := len(p.segments) - 1
+	out.WriteString(p.segments[l].endPoint(p.offsets[l], rsep))
 	out.WriteString("' />")
 	return out.String()
 }
@@ -65,11 +65,16 @@ func (p *Path) Class() string {
 }
 
 func (p *Path) arc(i int, rbase, rsep float64) string {
+	var first, second string
 	if i == 0 {
-		return p.corners[i].startPoint(p.offsets[0], rsep)
+		first = p.segments[0].startPoint(p.offsets[0], rsep)
+	} else {
+		first = p.segments[i-1].ArcTo(p.segments[i], p.offsets[i-1], p.offsets[i], rbase, rsep)
 	}
-	if i == len(p.offsets) {
-		return p.corners[i].endPoint(p.offsets[i-1], rsep)
+	if i == len(p.segments)-1 {
+		second = p.segments[i].endPoint(p.offsets[i], rsep)
+	} else {
+		second = p.segments[i].ArcTo(p.segments[i+1], p.offsets[i], p.offsets[i+1], rbase, rsep)
 	}
-	return p.corners[i].Arc(p.offsets[i-1], p.offsets[i], rbase, rsep)
+	return first + second
 }
