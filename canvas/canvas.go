@@ -82,13 +82,13 @@ func (c *Canvas) printInit() {
 }
 
 // printElements prints <use> tags to draw the elements defined earlier. Within
-// each layer, first the elements are drawn with class="bg" to stroke outlines,
+// each layer, first the elements are drawn with class="e.Class() bg" to stroke outlines,
 // then with class="e.Class()" to draw the elements in foreground
 func (c *Canvas) printElements() {
 	for _, es := range c.elements {
 		c.Println("<g>")
 		for _, e := range es {
-			c.Printf(usefmt, e.Id(), "whitebg")
+			c.Printf(usefmt, e.Id(), e.Class()+" bg")
 		}
 		for _, e := range es {
 			c.Printf(usefmt, e.Id(), e.Class())
