@@ -123,3 +123,15 @@ func (s *Segment) LabelAtY(y float64, posSide bool, text string) *Label {
 	x := ((s.Start.Y-y)*s.End.X - (s.End.Y-y)*s.Start.X) / (s.Start.Y - s.End.Y)
 	return s.LabelAt(Point{x, y}, posSide, text)
 }
+
+func SegmentConcat(slices ...[]*Segment) []*Segment {
+	sum := 0
+	for _, sl := range slices {
+		sum += len(sl)
+	}
+	segs := make([]*Segment, 0, sum)
+	for _, sl := range slices {
+		segs = append(segs, sl...)
+	}
+	return segs
+}
