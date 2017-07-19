@@ -8,7 +8,7 @@ import (
 type Segment struct {
 	Start   Point
 	End     Point
-	offsets []int
+	offsets []float64
 }
 
 func NewSegment(x0, y0, x1, y1 float64) *Segment {
@@ -22,7 +22,7 @@ func (s *Segment) Direction() Direction {
 	return s.Start.DirectionTo(s.End)
 }
 
-func (s *Segment) AddOffset(offset int) {
+func (s *Segment) AddOffset(offset float64) {
 	s.offsets = append(s.offsets, offset)
 }
 
@@ -42,19 +42,19 @@ func Sequence(points ...Point) []*Segment {
 	return segs
 }
 
-func (s *Segment) endPoint(offset int, rsep float64) string {
-	p := s.Direction().Basis(0, float64(offset)*rsep, s.End)
+func (s *Segment) endPoint(offset, rsep float64) string {
+	p := s.Direction().Basis(0, offset*rsep, s.End)
 	return fmt.Sprintf("L %s", p)
 }
 
-func (s *Segment) startPoint(offset int, rsep float64) string {
-	p := s.Direction().Basis(0, float64(offset)*rsep, s.Start)
+func (s *Segment) startPoint(offset, rsep float64) string {
+	p := s.Direction().Basis(0, offset*rsep, s.Start)
 	return fmt.Sprintf("M %s\n", p)
 }
 
-func (s *Segment) ArcTo(other *Segment, in, out int, rbase, rsep float64) string {
-	inr := float64(in) * rsep
-	outr := float64(out) * rsep
+func (s *Segment) ArcTo(other *Segment, in, out, rbase, rsep float64) string {
+	inr := in * rsep
+	outr := out * rsep
 	if s.End != other.Start {
 		return s.endPoint(in, rsep) + other.startPoint(out, rsep)
 	}
@@ -66,7 +66,7 @@ func (s *Segment) ArcTo(other *Segment, in, out int, rbase, rsep float64) string
 			return ""
 		}
 		// otherwise, parallel shifts
-		delta := math.Abs(float64(out-in) * rsep)
+		delta := math.Abs(out-in) * rsep
 		p0 := inDir.Basis(-delta, inr, s.End)
 		p1 := inDir.Basis(0, inr, s.End)
 		p2 := outDir.Basis(0, outr, s.End)
@@ -74,18 +74,21 @@ func (s *Segment) ArcTo(other *Segment, in, out int, rbase, rsep float64) string
 		return fmt.Sprintf("L %s C %s %s %s\n", p0, p1, p2, p3)
 	}
 	// rounded corner
-	var inDelta, outDelta, sweep int
+	var (
+		inDelta, outDelta float64
+		sweep             int
+	)
 	theta := inDir.Minus(outDir) / 2
 	if theta > math.Pi/2 {
 		sweep = 1
-		inDelta = maxIntSlice(s.offsets) - in
-		outDelta = maxIntSlice(other.offsets) - out
+		inDelta = maxFloatSlice(s.offsets) - in
+		outDelta = maxFloatSlice(other.offsets) - out
 	} else {
 		sweep = 0
-		inDelta = in - minIntSlice(s.offsets)
-		outDelta = out - minIntSlice(other.offsets)
+		inDelta = in - minFloatSlice(s.offsets)
+		outDelta = out - minFloatSlice(other.offsets)
 	}
-	r := rsep*math.Min(float64(inDelta), float64(outDelta)) + rbase
+	r := rsep*math.Min(inDelta, outDelta) + rbase
 	l := math.Abs(r * math.Tan(theta))
 	alpha := 1 / math.Sin(theta*2)
 	p := outDir.Basis(-alpha*inr, 0, inDir.Basis(alpha*outr, 0, s.End))
@@ -95,11 +98,11 @@ func (s *Segment) ArcTo(other *Segment, in, out int, rbase, rsep float64) string
 }
 
 func (s *Segment) LabelAt(point Point, posSide bool, text string) *Label {
-	var offset int
+	var offset float64
 	if posSide {
-		offset = maxIntSlice(s.offsets)
+		offset = maxFloatSlice(s.offsets)
 	} else {
-		offset = minIntSlice(s.offsets)
+		offset = minFloatSlice(s.offsets)
 	}
 	return &Label{
 		Text:    text,
@@ -112,12 +115,14 @@ func (s *Segment) LabelAt(point Point, posSide bool, text string) *Label {
 	}
 }
 
+// LabelAtX places a label along a segment at a specified x-value
 func (s *Segment) LabelAtX(x float64, posSide bool, text string) *Label {
 	// find y such that (x, y) is on the line between s.Start and s.End
 	y := ((s.Start.X-x)*s.End.Y - (s.End.X-x)*s.Start.Y) / (s.Start.X - s.End.X)
 	return s.LabelAt(Point{x, y}, posSide, text)
 }
 
+// LabelAtY places a label along a segment at a specified y-value
 func (s *Segment) LabelAtY(y float64, posSide bool, text string) *Label {
 	// find x such that (x, y) is on the line between s.Start and s.End
 	x := ((s.Start.Y-y)*s.End.X - (s.End.Y-y)*s.Start.X) / (s.Start.Y - s.End.Y)

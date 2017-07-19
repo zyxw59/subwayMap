@@ -11,13 +11,13 @@ type Path struct {
 	id       string
 	class    string
 	segments []*Segment
-	offsets  []int
+	offsets  []float64
 }
 
 // NewPath returns a new Path with a given id, class, list of segments, and
 // list of offsets. len(segments) should equal len(offsets). If one is too
 // long, it will be truncated
-func NewPath(id, class string, segments []*Segment, offsets []int) *Path {
+func NewPath(id, class string, segments []*Segment, offsets []float64) *Path {
 	ls := len(segments)
 	lo := len(offsets)
 	switch {

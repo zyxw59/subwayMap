@@ -1,21 +1,19 @@
 package corner
 
-func minIntSlice(slice []int) int {
+import "math"
+
+func minFloatSlice(slice []float64) float64 {
 	m := slice[0]
 	for _, x := range slice {
-		if x < m {
-			m = x
-		}
+		m = math.Min(m, x)
 	}
 	return m
 }
 
-func maxIntSlice(slice []int) int {
+func maxFloatSlice(slice []float64) float64 {
 	m := slice[0]
 	for _, x := range slice {
-		if x > m {
-			m = x
-		}
+		m = math.Max(m, x)
 	}
 	return m
 }

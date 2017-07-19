@@ -17,7 +17,7 @@ type Label struct {
 	Text    string
 	point   Point
 	dir     Direction
-	offset  int
+	offset  float64
 	posSide bool
 	id      string
 	class   string
