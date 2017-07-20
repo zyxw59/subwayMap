@@ -1,4 +1,4 @@
-package canvas
+package corner
 
 import (
 	"fmt"
@@ -12,13 +12,12 @@ const (
 	svgns         = "xmlns='http://www.w3.org/2000/svg'\nxmlns:xlink='http://www.w3.org/1999/xlink'>"
 	usefmt        = "<use xlink:href='#%s' class='%s' />\n"
 	whitebg       = "class='whitebg'"
-	labelFudge    = 0.5
 )
 
 type Element interface {
-	Element(rbase, rsep float64) string
-	Id() string
-	Class() string
+	Def() string
+	Use() string
+	Usebg() string
 }
 
 type Canvas struct {
@@ -26,20 +25,20 @@ type Canvas struct {
 	Width      float64
 	Height     float64
 	Stylesheet string
-	Rbase      float64
-	Rsep       float64
+	rbase      float64
+	rsep       float64
 	elements   [][]Element
 }
 
-// New initializes a new Canvas
-func New(writer io.Writer, width, height float64, stylesheet string, rbase, rsep float64) *Canvas {
+// NewCanvas initializes a new Canvas
+func NewCanvas(writer io.Writer, width, height float64, stylesheet string, rbase, rsep float64) *Canvas {
 	c := &Canvas{
 		writer:     writer,
 		Width:      width,
 		Height:     height,
 		Stylesheet: stylesheet,
-		Rbase:      rbase,
-		Rsep:       rsep,
+		rbase:      rbase,
+		rsep:       rsep,
 	}
 	c.printInit()
 	return c
@@ -50,7 +49,7 @@ func (c *Canvas) AddElements(elements ...Element) {
 	c.elements = append(c.elements, elements)
 	c.Println("<defs>")
 	for _, e := range elements {
-		c.Println(e.Element(c.Rbase, c.Rsep))
+		c.Println(e.Def())
 	}
 	c.Println("</defs>")
 }
@@ -88,10 +87,10 @@ func (c *Canvas) printElements() {
 	for _, es := range c.elements {
 		c.Println("<g>")
 		for _, e := range es {
-			c.Printf(usefmt, e.Id(), e.Class()+" bg")
+			c.Println(e.Usebg())
 		}
 		for _, e := range es {
-			c.Printf(usefmt, e.Id(), e.Class())
+			c.Println(e.Use())
 		}
 		c.Println("</g>")
 	}

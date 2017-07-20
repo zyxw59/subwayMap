@@ -40,41 +40,41 @@ func NewPath(id, class string, segments []*Segment, offsets []float64) *Path {
 	return &path
 }
 
-// Element generates the SVG <path> element to draw the Path. rbase determines
+// Def generates the SVG <path> element to draw the Path. rbase determines
 // the base radius of corners, and rsep determines the additional radius for
 // each concentric Path
-func (p *Path) Element(rbase, rsep float64) string {
+func (p *Path) Def() string {
 	var out bytes.Buffer
 	out.WriteString(fmt.Sprintf("<path id='%s' d='", p.id))
-	out.WriteString(p.segments[0].startPoint(p.offsets[0], rsep))
+	out.WriteString(p.segments[0].startPoint(p.offsets[0]))
 	for i, s := range p.segments[1:] {
-		out.WriteString(p.segments[i].ArcTo(s, p.offsets[i], p.offsets[i+1], rbase, rsep))
+		out.WriteString(p.segments[i].ArcTo(s, p.offsets[i], p.offsets[i+1]))
 	}
 	l := len(p.segments) - 1
-	out.WriteString(p.segments[l].endPoint(p.offsets[l], rsep))
+	out.WriteString(p.segments[l].endPoint(p.offsets[l]))
 	out.WriteString("' />")
 	return out.String()
 }
 
-func (p *Path) Id() string {
-	return p.id
+func (p *Path) Use() string {
+	return fmt.Sprintf(usefmt, p.id, p.class)
 }
 
-func (p *Path) Class() string {
-	return p.class
+func (p *Path) Usebg() string {
+	return fmt.Sprintf(usefmt, p.id, "bg "+p.class)
 }
 
 func (p *Path) arc(i int, rbase, rsep float64) string {
 	var first, second string
 	if i == 0 {
-		first = p.segments[0].startPoint(p.offsets[0], rsep)
+		first = p.segments[0].startPoint(p.offsets[0])
 	} else {
-		first = p.segments[i-1].ArcTo(p.segments[i], p.offsets[i-1], p.offsets[i], rbase, rsep)
+		first = p.segments[i-1].ArcTo(p.segments[i], p.offsets[i-1], p.offsets[i])
 	}
 	if i == len(p.segments)-1 {
-		second = p.segments[i].endPoint(p.offsets[i], rsep)
+		second = p.segments[i].endPoint(p.offsets[i])
 	} else {
-		second = p.segments[i].ArcTo(p.segments[i+1], p.offsets[i], p.offsets[i+1], rbase, rsep)
+		second = p.segments[i].ArcTo(p.segments[i+1], p.offsets[i], p.offsets[i+1])
 	}
 	return first + second
 }

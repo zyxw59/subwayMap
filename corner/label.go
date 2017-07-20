@@ -13,56 +13,66 @@ const (
 	tspanFmt      = "<tspan x='%f' dy='1em'>%s</tspan>"
 )
 
+type Anchor int8
+
+const (
+	Left   Anchor = -3
+	Top    Anchor = -1
+	Right  Anchor = 3
+	Bottom Anchor = 1
+)
+
 type Label struct {
-	Text    string
-	point   Point
-	dir     Direction
-	offset  float64
-	posSide bool
-	id      string
-	class   string
+	Lines  []string
+	Point  Point
+	Anchor Anchor
+	id     string
+	class  string
 }
 
-func (l *Label) Element(rbase, rsep float64) string {
+func NewLabel(lines []string, point Point, anchor Anchor, id, class string) *Label {
+	return &Label{
+		Lines:  lines,
+		Point:  point,
+		Anchor: anchor,
+		id:     id,
+		class:  class,
+	}
+}
+
+func (l *Label) Def() string {
 	baseline := "middle"
 	align := "middle"
-	lines := strings.Split(l.Text, "\n")
+	lines := make([]string, len(l.Lines))
 	firstDy := -float64(len(lines)-1) / 2
-	var offset float64
-	if l.posSide {
-		offset = float64(l.offset) + labelFudge
-	} else {
-		offset = float64(l.offset) - labelFudge
-	}
-	anchor := l.dir.Basis(offset*rsep, 0, l.point)
-	switch {
-	case anchor.X < l.point.X:
+	switch l.Anchor {
+	case Top + Right, Right, Bottom + Right:
 		align = "end"
-	case anchor.X > l.point.X:
+	case Top + Left, Left, Bottom + Left:
 		align = "start"
 	}
-	switch {
-	case anchor.Y < l.point.Y:
+	switch l.Anchor {
+	case Bottom + Left, Bottom, Bottom + Right:
 		baseline = "alphabetic"
 		firstDy = -float64(len(lines) - 1)
-	case anchor.Y > l.point.Y:
+	case Top + Left, Top, Top + Right:
 		baseline = "hanging"
 		firstDy = 0
 	}
-	for i, l := range lines {
+	for i, t := range l.Lines {
 		if i == 0 {
-			lines[i] = fmt.Sprintf(firstTspanFmt, anchor.X, firstDy, l)
+			lines[i] = fmt.Sprintf(firstTspanFmt, l.Point.X, firstDy, t)
 		} else {
-			lines[i] = fmt.Sprintf(tspanFmt, anchor.X, l)
+			lines[i] = fmt.Sprintf(tspanFmt, l.Point.X, t)
 		}
 	}
-	return fmt.Sprintf(labelFmt, l.id, anchor.X, anchor.Y, baseline, align, strings.Join(lines, ""))
+	return fmt.Sprintf(labelFmt, l.id, l.Point.X, l.Point.Y, baseline, align, strings.Join(lines, ""))
 }
 
-func (l *Label) Id() string {
-	return l.id
+func (p *Label) Use() string {
+	return fmt.Sprintf(usefmt, p.id, p.class)
 }
 
-func (l *Label) Class() string {
-	return l.class
+func (p *Label) Usebg() string {
+	return fmt.Sprintf(usefmt, p.id, "bg "+p.class)
 }
